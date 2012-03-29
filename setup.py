@@ -1,9 +1,10 @@
 #!/usr/bin/python
 
-from distutils.core import setup
+from setuptools import setup, find_packages
+from pysunrise import __version__
 
 setup(name='pysunrise',
-        version='0.1',
+        version=__version__,
         author='Philippe Gauthier',
         author_email='philippe.gauthier@deuxpi.ca',
         url='http://www.deuxpi.ca/pysunrise/',
@@ -26,5 +27,14 @@ setup(name='pysunrise',
             ],
         platforms='All',
         license='GPL3',
-        scripts=['pysunrise'])
+        packages=find_packages(exclude=['test']),
+        scripts=['scripts/sunrise-update-pvoutput'],
+        zip_safe=True,
+        install_requires=[
+            'pymodbus >= 0.9.0',
+            'pyserial >= 2.4',
+            'nose >= 1.0.0',
+            ],
+        test_suite='nose.collector',
+        )
 
