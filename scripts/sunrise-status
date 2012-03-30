@@ -20,17 +20,13 @@
 from pysunrise.modbus import InverterModbusClient
 
 class PVInverter:
-    def __init__(self, address, serial_port, baud_rate=19200, timeout=0.500):
-        self.client = InverterModbusClient(port=serial_port, baudrate=baud_rate)
+    def __init__(self, client, address):
+        self.client = client
         self.address = address
-
-    def _send_and_read(self, data, expected_length):
-        rr = self.client.read_holding_registers(data)
-        return rr
 
     def read_registers(self, starting_address, num_points):
         rr = self.client.read_holding_registers(starting_address, num_points, unit=self.address)
-        if rr.registers:
+        if rr is not None:
             return rr.registers
 
 class PVStack:
@@ -121,9 +117,12 @@ def display(label, value, units, precision=6):
 
 if __name__ == '__main__':
     # We have two inverters each connected to a USB serial port.
-    pvi1 = PVInverter(13, "/dev/ttyUSB0")
-    pvi2 = PVInverter(15, "/dev/ttyUSB1")
-    stack = PVStack([pvi1, pvi2])
+    inverters = []
+    for port, address in [("/dev/ttyUSB0", 13), ("/dev/ttyUSB1", 15)]:
+        client = InverterModbusClient(port=port, baudrate=19200)
+        inverter = PVInverter(client, address)
+        inverters.append(inverter)
+    stack = PVStack(inverters)
 
     print
     energy_today = stack.get_energy_today()
@@ -164,7 +163,7 @@ if __name__ == '__main__':
 
     print
 
-    if pv_power is not None and ac_power is not None:
+    if pv_power is not None and ac_power is not None and pv_power != 0.0:
         eff = (ac_power / pv_power) * 100.0
         display("DC/AC Conversion Efficiency", eff, "%", 1)
 
