@@ -20,14 +20,10 @@
 import struct
 
 from pymodbus.client.sync import ModbusSerialClient as ModbusClient
+from pymodbus.exceptions import ConnectionException
 from pymodbus.factory import ClientDecoder
 from pymodbus.transaction import ModbusBinaryFramer
 from pymodbus.utilities import checkCRC, computeCRC
-
-import logging
-logging.basicConfig()
-log = logging.getLogger()
-log.setLevel(logging.DEBUG)
 
 __all__ = ["InverterModbusClient"]
 
@@ -77,7 +73,7 @@ class InverterModbusFramer(ModbusBinaryFramer):
         self.__buffer += message
 
     def getFrame(self):
-        start = self.__hsize + 1
+        start = self.__hsize
         end = self.__header['len'] - 3
         buffer = self.__buffer[start:end]
         if end > 0:
@@ -100,3 +96,23 @@ class InverterModbusClient(ModbusClient):
     def __init__(self, **kwargs):
         ModbusClient.__init__(self, method='binary', **kwargs)
         self.framer = InverterModbusFramer(ClientDecoder())
+
+    def execute(self, request=None):
+        if not self.connect():
+            raise ConnectionException("Failed to connect[%s]" % (self.__str__()))
+        if self.transaction:
+            # FIXME This is an ugly hack to allow the transaction manager
+            # to multiplex the client connections.
+            self.transaction.client = self
+            return self.transaction.execute(request)
+        raise ConnectionException("Client Not Connected")
+
+    def _recv(self, size):
+        while True:
+            data = self.socket.read(1)
+            if data == "":
+                break
+            self.framer.addToFrame(data)
+            if self.framer.checkFrame():
+                break
+        return ""

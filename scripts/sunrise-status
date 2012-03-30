@@ -113,7 +113,7 @@ def display(label, value, units, precision=6):
     else:
         value_format = "%%11.%df" % precision
         value = value_format % value
-    print "%-26s = %s %s\n" % (label, value, units)
+    print "%-26s = %s %s" % (label, value, units)
 
 if __name__ == '__main__':
     # We have two inverters each connected to a USB serial port.

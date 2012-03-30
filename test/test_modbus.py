@@ -24,7 +24,7 @@ class ModbusTest(unittest.TestCase):
         self.assertTrue(self.framer.isFrameReady())
         self.assertTrue(self.framer.checkFrame())
         result = self.framer.getFrame()
-        self.assertEqual(message[3:-3], result)
+        self.assertEqual(message[2:-3], result)
 
     def testFramerIncompleteMessage(self):
         message = '\x0a\x01\x03'
@@ -44,7 +44,7 @@ class ModbusTest(unittest.TestCase):
         self.assertTrue(self.framer.isFrameReady())
         self.assertTrue(self.framer.checkFrame())
         result = self.framer.getFrame()
-        self.assertEqual(message[3:-3], result)
+        self.assertEqual(message[2:-3], result)
         self.framer.advanceFrame()
         self.assertFalse(self.framer.isFrameReady())
         self.assertFalse(self.framer.checkFrame())
@@ -56,7 +56,7 @@ class ModbusTest(unittest.TestCase):
         self.assertTrue(self.framer.isFrameReady())
         self.assertTrue(self.framer.checkFrame())
         result = self.framer.getFrame()
-        self.assertEqual(message[3:-3], result)
+        self.assertEqual(message[2:-3], result)
         self.framer.advanceFrame()
         self.framer.addToFrame(message)
         self.assertTrue(self.framer.isFrameReady())
